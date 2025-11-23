@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+.pnpm-store/
+.pnpm/
+.pnpm-workspace-state-*.json
+
+# build output
+dist/
+dist-ssr/
+*.log
+
+# env files
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

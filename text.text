@@ -1,0 +1,39 @@
+features/
+  wellness/
+    admin/
+      pages/
+        DashboardPage.tsx
+        LoginPage.tsx
+        ProductsPage.tsx          // list + filters
+        ProductEditPage.tsx       // edit existing
+        ProductCreatePage.tsx     // new item
+      components/
+        ProductTable.tsx
+        ProductForm.tsx
+        ProductThumb.tsx
+        CategorySelect.tsx
+      hooks/
+        useProducts.ts
+        useProduct.ts
+        useCategories.ts
+      api/
+        products.api.ts           // fetchAll, getById, create, update, remove
+        categories.api.ts
+        client.ts                 // axios/fetch instance
+      types/
+        product.ts                // Product, ProductInput, etc.
+        category.ts
+      lib/
+        validators.ts             // zod/yup schemas
+        mappers.ts                // DTO <-> UI model
+    storefront/
+      pages/
+        ProductsPage.tsx
+        ProductDetailsPage.tsx
+      components/
+        ProductCard.tsx
+        CategoryGrid.tsx
+      hooks/
+        useStorefrontProducts.ts
+      api/                        // can re-use from admin or re-export
+        index.ts

@@ -1,0 +1,57 @@
+import { Link, useRouteError, isRouteErrorResponse } from "react-router-dom";
+
+export default function NotFound() {
+  const err = useRouteError();
+  const message = isRouteErrorResponse(err)
+    ? `${err.status} ${err.statusText}`
+    : (err as Error | undefined)?.message ?? "The page you’re looking for doesn’t exist.";
+
+  return (
+    <div className="min-h-screen grid place-items-center bg-gray-50 p-6">
+      <div className="w-full max-w-xl rounded-2xl border bg-white shadow-sm p-8">
+        {/* Illustration */}
+        <div className="mx-auto mb-6 h-28 w-28 rounded-full bg-gray-100 grid place-items-center">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-10 w-10 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 7v10a2 2 0 0 0 2 2h6m10-8v6a2 2 0 0 1-2 2h-7m9-12V7M7 7h10M7 12h6M7 16h4"
+            />
+          </svg>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-semibold text-gray-900 text-center">404 — Not Found</h1>
+        <p className="mt-2 text-center text-gray-600">{message}</p>
+
+        {/* Actions */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center rounded-lg bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90"
+          >
+            Go to Home
+          </Link>
+          <button
+            onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.href = "/"))}
+            className="inline-flex items-center rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Go Back
+          </button>
+        </div>
+
+        {/* Helpful tips */}
+        <div className="mt-6 text-xs text-gray-500 text-center">
+          If this keeps happening, please contact support or check the URL.
+        </div>
+      </div>
+    </div>
+  );
+}
