@@ -17,6 +17,10 @@ export type CreateProductDto = {
   description: string;
   imageUrl: string;
   isNew: boolean;
+  tag?: string;
+  rating?: number;
+  discountPct?: number;
+  price?: number;
 };
 
 /** Generic API result wrapper */
@@ -39,6 +43,10 @@ export const ProductCreateSchema = z.object({
   description: z.string().min(1, "Description is required"),
   imageUrl: z.string().url("Must be a valid URL"),
   isNew: z.boolean().default(false),
+  tag: z.string().optional(),
+  rating: z.number().min(0).max(5).default(0).optional(),
+  discountPct: z.number().min(0).max(100).default(0).optional(),
+  price: z.number().min(0).default(0).optional(),
 });
 
 

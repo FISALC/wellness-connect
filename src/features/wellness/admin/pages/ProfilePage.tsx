@@ -1,29 +1,52 @@
-import { useState } from "react";
-
-type Profile = {
-  fullName: string;
-  email: string;
-  avatarUrl: string;
-};
+import { useState, useEffect } from "react";
+import {
+  getProfile,
+  updateProfile,
+  changePassword,
+  AdminProfileDto,
+} from "../api/profile.api";
 
 export default function ProfilePage() {
-  // TODO: Replace with real fetch to /api/v1/admin/me
-  const [profile, setProfile] = useState<Profile>({
-    fullName: "Admin User",
-    email: "admin@you.com",
-    avatarUrl: "https://ui-avatars.com/api/?name=AD&background=EEE&color=555",
-  });
+  const [profile, setProfile] = useState<AdminProfileDto | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  // For password change
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+    try {
+      setLoading(true);
+      const data = await getProfile();
+      setProfile(data);
+    } catch (err) {
+      setMsg("Failed to load profile.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile) return;
+
     setSaving(true);
     setMsg(null);
     try {
-      // TODO: POST to something like /api/v1/admin/profile
-      await new Promise((r) => setTimeout(r, 600));
-      setMsg("Profile updated.");
+      const updated = await updateProfile({
+        fullName: profile.fullName,
+        avatarUrl: profile.avatarUrl,
+      });
+      setProfile(updated);
+      setMsg("Profile updated successfully.");
     } catch (err) {
       setMsg((err as Error).message || "Failed to save profile.");
     } finally {
@@ -31,10 +54,31 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
+  async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    setMsg("Password updated."); // TODO: call /api/v1/admin/change-password
+    setPasswordMsg(null);
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg("New passwords do not match.");
+      return;
+    }
+
+    try {
+      await changePassword({
+        currentPassword,
+        newPassword,
+      });
+      setPasswordMsg("Password updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setPasswordMsg("Failed to update password. Check your current password.");
+    }
   }
+
+  if (loading) return <div>Loading profile...</div>;
+  if (!profile) return <div>Error loading profile.</div>;
 
   return (
     <section className="space-y-6">
@@ -86,7 +130,7 @@ export default function ProfilePage() {
               value={profile.email}
               readOnly
             />
-            <p className="mt-1 text-xs text-gray-500">Email is read-only in this demo.</p>
+            <p className="mt-1 text-xs text-gray-500">Email is read-only.</p>
           </div>
 
           <div className="pt-2">
@@ -106,23 +150,51 @@ export default function ProfilePage() {
           className="rounded-lg border bg-white p-4 space-y-4"
         >
           <h2 className="font-medium">Change Password</h2>
+
+          {passwordMsg && (
+            <div className="rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {passwordMsg}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm mb-1">Current password</label>
-            <input type="password" className="w-full rounded-md border px-3 py-2" required />
+            <input
+              type="password"
+              className="w-full rounded-md border px-3 py-2"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
           </div>
           <div>
             <label className="block text-sm mb-1">New password</label>
-            <input type="password" className="w-full rounded-md border px-3 py-2" required />
+            <input
+              type="password"
+              className="w-full rounded-md border px-3 py-2"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
           </div>
           <div>
             <label className="block text-sm mb-1">Confirm new password</label>
-            <input type="password" className="w-full rounded-md border px-3 py-2" required />
+            <input
+              type="password"
+              className="w-full rounded-md border px-3 py-2"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </div>
-          <button className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
-            Update password
-          </button>
+          <div className="pt-2">
+            <button className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50">
+              Update password
+            </button>
+          </div>
         </form>
       </div>
     </section>
   );
 }
+

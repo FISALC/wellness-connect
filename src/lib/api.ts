@@ -1,16 +1,34 @@
 // src/lib/api.ts
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ""; 
-// e.g. http://localhost:5099
-
-if (!API_BASE) {
-  // just to help during dev
-  console.warn("VITE_API_BASE_URL is not set!");
-}
-
 export const api = axios.create({
-  baseURL: API_BASE,
-  // You can set default headers if needed
-  // headers: { "Content-Type": "application/json" },
+  baseURL: "", // Let the proxy handle the domain in dev
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("wc_admin_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("wc_admin_token");
+      localStorage.removeItem("wc_admin_user");
+      // Optional: Force redirect if not already on login page
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    console.error("API Error:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);

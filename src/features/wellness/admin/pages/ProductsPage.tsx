@@ -114,7 +114,7 @@ export default function ProductsPage() {
             Reset
           </button>
           <Link
-            to="/admin/wellness/products/new"
+            to="/admin/products/new"
             className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm"
           >
             + New Product
@@ -163,7 +163,7 @@ export default function ProductsPage() {
                     <div className="flex justify-end gap-2">
                       <button
                         className="rounded-md border px-2 py-1 hover:bg-gray-50"
-                        onClick={() => nav(`/admin/wellness/products/${p.id}/edit`)}
+                        onClick={() => nav(`/admin/products/${p.id}/edit`)}
                       >
                         Edit
                       </button>
@@ -224,7 +224,7 @@ function HeaderBar() {
     <div className="mb-1 flex items-center justify-between">
       <h1 className="text-xl font-semibold">Products</h1>
       <Link
-        to="/admin/wellness/products/new"
+        to="/admin/products/new"
         className="rounded-md bg-gray-900 text-white px-3 py-1.5 text-sm"
       >
         + New
@@ -277,7 +277,7 @@ function EmptyState() {
       <h3 className="text-lg font-semibold">No products yet</h3>
       <p className="text-sm text-gray-600 mt-1">Create your first product to get started.</p>
       <Link
-        to="/admin/wellness/products/new"
+        to="/admin/products/new"
         className="inline-flex mt-4 rounded-md bg-gray-900 text-white px-3 py-1.5 text-sm"
       >
         + Create Product

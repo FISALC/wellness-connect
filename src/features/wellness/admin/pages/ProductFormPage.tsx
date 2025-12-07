@@ -15,6 +15,10 @@ const DEFAULTS: ProductFormValues = {
   description: "",
   imageUrl: "",
   isNew: true,
+  tag: "",
+  rating: 5,
+  discountPct: 0,
+  price: 0,
 };
 
 export default function ProductForm({ initial, submitting, onSubmit }: Props) {
@@ -83,6 +87,55 @@ export default function ProductForm({ initial, submitting, onSubmit }: Props) {
           required
         />
         <p className="mt-1 text-xs text-gray-500">Store files wherever you like and paste the URL.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Price ($)</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            className="w-full rounded-md border px-3 py-2"
+            value={values.price}
+            onChange={(e) => set("price", Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Tag (Optional)</label>
+          <input
+            className="w-full rounded-md border px-3 py-2"
+            value={values.tag || ""}
+            onChange={(e) => set("tag", e.target.value)}
+            placeholder="e.g. BESTSELLER"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Rating (0-5)</label>
+          <input
+            type="number"
+            min="0"
+            max="5"
+            step="0.1"
+            className="w-full rounded-md border px-3 py-2"
+            value={values.rating}
+            onChange={(e) => set("rating", Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Discount %</label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            className="w-full rounded-md border px-3 py-2"
+            value={values.discountPct}
+            onChange={(e) => set("discountPct", Number(e.target.value))}
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

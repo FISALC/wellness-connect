@@ -5,6 +5,7 @@ type Props = { open: boolean; onClose: () => void };
 const links = [
   { to: "/admin", label: "Dashboard", icon: "📊" },
   { to: "/admin/products", label: "Products", icon: "🧴" },
+  { to: "/admin/users", label: "Users", icon: "👥" },
   { to: "/admin/categories", label: "Categories", icon: "🗂️" },
 ];
 
@@ -33,6 +34,39 @@ export default function AdminSideNav({ open, onClose }: Props) {
               <span>{l.label}</span>
             </NavLink>
           ))}
+          <NavLink
+            to="/admin/storefront"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? "bg-emerald-50 text-emerald-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`
+            }
+            onClick={onClose}
+          >
+            <span className="text-lg">🎨</span>
+            Storefront
+          </NavLink>
+          <NavLink
+            to="/admin/wellness-hub"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? "bg-emerald-50 text-emerald-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`
+            }
+            onClick={onClose}
+          >
+            <span className="text-lg">📰</span>
+            Wellness Hub
+          </NavLink>
+          <NavLink
+            to="/admin/support"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? "bg-emerald-50 text-emerald-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`
+            }
+            onClick={onClose}
+          >
+            <span className="text-lg">💬</span>
+            Support
+          </NavLink>
         </nav>
       </aside>
     </>

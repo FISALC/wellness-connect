@@ -1,209 +1,143 @@
-// src/pages/WellnessHubPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Article, ArticleCategory } from "../admin/types/wellness-hub";
+import { getArticles } from "../admin/api/wellness-hub.api";
 
-/* ---------- Types ---------- */
-type Video = { id: string; title: string; subtitle: string; thumb: string; duration?: string };
-type Guide = { id: string; title: string; subtitle: string; icon: string; cta: string; img: string };
-type Blog  = { id: string; title: string; meta: string; thumb: string };
+const CATEGORIES: ArticleCategory[] = ["Nutrition", "Workouts", "Mental Health", "Lifestyle"];
 
-/* ---------- Mock Data (swap with API later) ---------- */
-const VIDEOS: Video[] = [
-  { id: "v1", title: "Full Body Yoga Flow", subtitle: "Strength • Flexibility • Mobility", thumb: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1600&auto=format&fit=crop", duration: "18:24" },
-  { id: "v2", title: "HIIT Cardio Blast",   subtitle: "Toning • Fat Burn • Endurance",    thumb: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1600&auto=format&fit=crop", duration: "21:03" },
-  { id: "v3", title: "Mobility Morning",    subtitle: "Warm-up • Joint Care • Flow",       thumb: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1600&auto=format&fit=crop", duration: "09:12" },
-];
-
-const GUIDES: Guide[] = [
-  {
-    id: "g1",
-    title: "DIET PLANS & GUIDES",
-    subtitle: "Calories & macro basics",
-    icon: "🥗",
-    cta: "Watch Now",
-    img: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1600&auto=format&fit=crop"
-  },
-  {
-    id: "g2",
-    title: "7-Day Detox Reset Meal Plan",
-    subtitle: "Dietetics • Gut health",
-    icon: "🍵",
-    cta: "Watch Now",
-    img: "https://images.unsplash.com/photo-1505575972945-280b9f262c0f?q=80&w=1600&auto=format&fit=crop"
-  },
-  {
-    id: "g3",
-    title: "Beginner Guide to Mindful Fasting",
-    subtitle: "Protocols • Safety notes",
-    icon: "🕊️",
-    cta: "Read Now",
-    img: "https://images.unsplash.com/photo-1467453678174-768ec283a940?q=80&w=1600&auto=format&fit=crop"
-  },
-  {
-    id: "g4",
-    title: "Protein Timing Cheat Sheet",
-    subtitle: "Pre/Post-workout tips",
-    icon: "⏱️",
-    cta: "Read Now",
-    img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1600&auto=format&fit=crop"
-  },
-];
-
-const BLOGS: Blog[] = [
-  { id: "b1", title: "Premium Blended Smoothies 101",      meta: "7 MIN • Reading",    thumb: "https://images.unsplash.com/photo-1553530979-7ee52c8f2d1d?q=80&w=1600&auto=format&fit=crop" },
-  { id: "b2", title: "Proper HIIT Basics",                  meta: "6 MIN • Cardio",     thumb: "https://images.unsplash.com/photo-1555952517-2e8e729e0b44?q=80&w=1600&auto=format&fit=crop" },
-  { id: "b3", title: "High-Protein Training: Faster Gains", meta: "8 MIN • Muscle",     thumb: "https://images.unsplash.com/photo-1518459031867-a89b944bffe1?q=80&w=1600&auto=format&fit=crop" },
-  { id: "b4", title: "Fitness-Friendly Easy Meals",         meta: "5 MIN • Nutrition",  thumb: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1600&auto=format&fit=crop" },
-  { id: "b5", title: "Morning Mobility Routine",            meta: "4 MIN • Flexibility",thumb: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1600&auto=format&fit=crop" },
-  { id: "b6", title: "Hydration Myths Debunked",            meta: "6 MIN • Wellness",   thumb: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=1600&auto=format&fit=crop" },
-];
-
-/* ---------- Page ---------- */
 export default function WellnessHubPage() {
-  // simple pager for blogs (client-only for now)
-  const [page, setPage] = useState(0);
-  const pageSize = 4;
-  const totalPages = Math.max(1, Math.ceil(BLOGS.length / pageSize));
-  const visibleBlogs = BLOGS.slice(page * pageSize, page * pageSize + pageSize);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCat, setActiveCat] = useState<ArticleCategory | "All">("All");
+
+  useEffect(() => {
+    getArticles()
+      .then(setArticles)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = activeCat === "All"
+    ? articles
+    : articles.filter(a => a.category === activeCat);
+
+  const featured = articles[0]; // Simple featured logic for now
+
+  if (loading) return <div className="min-h-screen pt-24 flex justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* HERO */}
-      <HeroBanner />
-
-      {/* SECTION 1: EXERCISE VIDEOS */}
-      <Section title="EXERCISE VIDEOS" className="mt-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {VIDEOS.map(v => <VideoCard key={v.id} video={v} />)}
+      <div className="relative bg-emerald-900 text-white py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <img src="https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=1920&auto=format&fit=crop" className="w-full h-full object-cover" alt="Background" />
         </div>
-      </Section>
-
-      {/* SECTION 2: DIET PLANS & GUIDES (full width below videos) */}
-      <Section title="DIET PLANS & GUIDES" className="mt-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {GUIDES.map(g => <GuideTile key={g.id} guide={g} />)}
+        <div className="relative z-10 max-w-7xl mx-auto text-center space-y-6">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">The Wellness Hub</h1>
+          <p className="text-xl text-emerald-100 max-w-2xl mx-auto">
+            Expert advice, nutrition tips, and workout guides to help you live your healthiest life.
+          </p>
         </div>
-      </Section>
+      </div>
 
-      {/* SECTION 3: WELLNESS BLOG */}
-      <Section title="WELLNESS BLOG" className="mt-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {visibleBlogs.map(b => <BlogCard key={b.id} post={b} />)}
-        </div>
-
-        {/* pager dots */}
-        <div className="mt-4 flex items-center justify-center gap-2">
-          {Array.from({ length: totalPages }).map((_, i) => (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+        {/* CATEGORY TABS */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <button
+            onClick={() => setActiveCat("All")}
+            className={`px-6 py-3 rounded-full font-medium transition-all shadow-sm
+              ${activeCat === "All" ? "bg-emerald-600 text-white shadow-emerald-200" : "bg-white text-gray-600 hover:bg-gray-100"}`}
+          >
+            All Posts
+          </button>
+          {CATEGORIES.map(cat => (
             <button
-              key={i}
-              onClick={() => setPage(i)}
-              className={`h-2.5 w-2.5 rounded-full border transition ${
-                page === i ? "bg-emerald-600 border-emerald-600" : "bg-white border-gray-300 hover:border-emerald-600"
-              }`}
-              aria-label={`Go to page ${i + 1}`}
-            />
+              key={cat}
+              onClick={() => setActiveCat(cat)}
+              className={`px-6 py-3 rounded-full font-medium transition-all shadow-sm
+                ${activeCat === cat ? "bg-emerald-600 text-white shadow-emerald-200" : "bg-white text-gray-600 hover:bg-gray-100"}`}
+            >
+              {cat}
+            </button>
           ))}
         </div>
-      </Section>
-    </div>
-  );
-}
 
-/* ---------- Sub-components ---------- */
+        {/* FEATURED ARTICLE (Only show on 'All') */}
+        {activeCat === "All" && featured && (
+          <div className="mb-16 bg-white rounded-3xl overflow-hidden shadow-xl grid md:grid-cols-2 group cursor-pointer hover:shadow-2xl transition-all duration-300">
+            <div className="h-64 md:h-auto overflow-hidden">
+              <img
+                src={featured.imageUrl}
+                alt={featured.title}
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <div className="p-8 md:p-12 flex flex-col justify-center space-y-4">
+              <div className="flex items-center gap-3 text-sm font-medium">
+                <span className="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{featured.category}</span>
+                <span className="text-gray-400">{featured.readTime}</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                {featured.title}
+              </h2>
+              <p className="text-gray-600 text-lg line-clamp-3">
+                {featured.excerpt}
+              </p>
+              <div className="pt-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                  {featured.author[0]}
+                </div>
+                <div className="text-sm">
+                  <p className="font-semibold text-gray-900">{featured.author}</p>
+                  <p className="text-gray-500">{new Date(featured.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-function HeroBanner() {
-  return (
-    <div className="rounded-2xl overflow-hidden border bg-gray-900/5">
-      <div
-        className="h-48 sm:h-56 lg:h-64 w-full bg-center bg-cover"
-        style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=1600&auto=format&fit=crop)"
-        }}
-      />
-      <div className="px-5 py-4 -mt-24 sm:-mt-28 relative">
-        <div className="inline-block rounded-xl bg-emerald-700 text-white px-4 py-2 shadow-lg">
-          <div className="text-sm font-semibold">FREE WELLNESS HUB</div>
-          <div className="text-xs opacity-90 -mt-0.5">Explore our promoted deals</div>
+        {/* ARTICLE GRID */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {(activeCat === "All" ? filtered.filter(a => a.id !== featured?.id) : filtered).map(article => (
+            <article key={article.id} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group flex flex-col">
+              <div className="h-56 overflow-hidden relative">
+                <img
+                  src={article.imageUrl}
+                  alt={article.title}
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-emerald-700 shadow-sm">
+                    {article.category}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                  <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+                  <span>•</span>
+                  <span>{article.readTime}</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition-colors">
+                  {article.title}
+                </h3>
+                <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-1">
+                  {article.excerpt}
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <span className="text-sm font-medium text-gray-900">{article.author}</span>
+                  <button className="text-emerald-600 font-semibold text-sm hover:underline">Read More &rarr;</button>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
-      </div>
-    </div>
-  );
-}
 
-function Section({
-  title,
-  className,
-  children,
-}: {
-  title: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className={className}>
-      <h2 className="text-sm font-semibold tracking-wide text-gray-800">{title}</h2>
-      <div className="mt-3">{children}</div>
-    </section>
-  );
-}
-
-function VideoCard({ video }: { video: Video }) {
-  return (
-    <article className="rounded-2xl border bg-white overflow-hidden">
-      <div className="relative">
-        <img src={video.thumb} alt={video.title} className="h-44 w-full object-cover" />
-        {/* play button */}
-        <button className="absolute inset-0 m-auto h-12 w-12 grid place-items-center rounded-full bg-white/90 text-emerald-700 shadow">
-          ▶
-        </button>
-        {video.duration && (
-          <span className="absolute bottom-2 right-2 text-[11px] px-2 py-0.5 rounded bg-black/70 text-white">
-            {video.duration}
-          </span>
+        {filtered.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg">No articles found in this category.</p>
+          </div>
         )}
       </div>
-      <div className="p-3">
-        <h3 className="font-semibold leading-snug">{video.title}</h3>
-        <p className="text-xs text-gray-500 mt-1">{video.subtitle}</p>
-        <button className="btn-primary mt-3">Watch Now</button>
-      </div>
-    </article>
-  );
-}
-
-function GuideTile({ guide }: { guide: Guide }) {
-  return (
-    <article className="relative rounded-2xl overflow-hidden border bg-white group">
-      {/* background image */}
-      <img
-        src={guide.img}
-        alt={guide.title}
-        className="h-44 sm:h-52 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-      />
-      {/* gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
-      {/* content */}
-      <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-        <div className="text-xl leading-none">{guide.icon}</div>
-        <h3 className="mt-1 font-semibold leading-snug drop-shadow-sm">{guide.title}</h3>
-        <p className="text-xs opacity-90">{guide.subtitle}</p>
-        <div className="mt-2">
-          <button className="btn-primary !bg-emerald-600 hover:!bg-emerald-700">{guide.cta}</button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function BlogCard({ post }: { post: Blog }) {
-  return (
-    <article className="rounded-2xl border bg-white overflow-hidden">
-      <img src={post.thumb} alt={post.title} className="h-36 w-full object-cover" />
-      <div className="p-3">
-        <h3 className="font-semibold leading-snug">{post.title}</h3>
-        <p className="text-xs text-gray-500 mt-1">{post.meta}</p>
-        <button className="btn mt-3">Read Now</button>
-      </div>
-    </article>
+    </div>
   );
 }

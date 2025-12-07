@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/features/auth/AuthContext";
 
 type Props = { onToggleSidebar: () => void };
 
 export default function AdminTopNav({ onToggleSidebar }: Props) {
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,7 +37,7 @@ export default function AdminTopNav({ onToggleSidebar }: Props) {
             aria-label="Toggle sidebar"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor">
-              <path d="M3 6h14M3 10h14M3 14h14" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M3 6h14M3 10h14M3 14h14" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
           <div className="font-semibold">
@@ -65,9 +67,9 @@ export default function AdminTopNav({ onToggleSidebar }: Props) {
                 alt="profile"
                 className="h-7 w-7 rounded-full"
               />
-              <span className="hidden sm:inline text-sm">admin@you.com</span>
+              <span className="hidden sm:inline text-sm">{user?.email || "admin@you.com"}</span>
               <svg width="16" height="16" fill="none" viewBox="0 0 20 20" className="text-gray-500">
-                <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 
@@ -97,8 +99,7 @@ export default function AdminTopNav({ onToggleSidebar }: Props) {
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
                   onClick={() => {
                     setOpen(false);
-                    // TODO: clear token/cookies here
-                    // e.g., localStorage.removeItem("access_token");
+                    logout();
                     navigate("/login", { replace: true });
                   }}
                 >

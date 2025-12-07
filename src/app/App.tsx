@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
+import { AuthProvider } from "@/features/auth/AuthContext";
 
 export default function App() {
   return (
-    <>
-      {/* Global providers go here later (QueryClientProvider, I18n, etc.) */}
+    <AuthProvider>
       <Outlet />
-    </>
+    </AuthProvider>
   );
 }

@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Role = "Admin" | "Editor" | "Viewer";
-type AuthUser = { email: string; role: Role };
+type AuthUser = { username: string; role: Role };
 type Ctx = {
   user: AuthUser | null;
   token: string | null;
