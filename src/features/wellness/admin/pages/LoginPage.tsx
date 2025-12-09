@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     try {
       const res = await import("../api/auth.api").then(m => m.login({ username, password: pwd }));
       // Response is flat: { token, username, role }
-      login(res.token, { username: res.username, role: res.role as any });
+      login(res.token, { username: res.username, email: "admin@wellness.com", role: res.role as any });
       setSuccess("Login successful! Redirecting...");
       setTimeout(() => {
         nav("/admin", { replace: true });
