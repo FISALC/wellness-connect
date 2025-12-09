@@ -7,6 +7,7 @@ const ContactPage = lazy(() => import("@/features/wellness/public/ContactPage"))
 const CategoriesPage = lazy(() => import("@/features/wellness/public/CategoriesPage"));
 const WellnessHubPage = lazy(() => import("@/features/wellness/public/WellnessHubPage"));
 const CheckoutPage = lazy(() => import("@/features/wellness/public/CheckoutPage"));
+const FreelanceTraineePage = lazy(() => import("@/features/wellness/public/FreelanceTraineePage"));
 const LoginPage = lazy(() => import("@/features/wellness/admin/pages/LoginPage"));
 
 function Loader() {
@@ -22,6 +23,7 @@ export const publicRoutes: RouteObject = {
     { path: "categories", element: <Suspense fallback={<Loader />}><CategoriesPage /></Suspense> },
     { path: "wellness-hub", element: <Suspense fallback={<Loader />}><WellnessHubPage /></Suspense> },
     { path: "checkout", element: <Suspense fallback={<Loader />}><CheckoutPage /></Suspense> },
+    { path: "freelance-trainee", element: <Suspense fallback={<Loader />}><FreelanceTraineePage /></Suspense> },
     { path: "login", element: <Suspense fallback={<Loader />}><LoginPage /></Suspense> },
     { path: "wellness-hub", element: <Suspense fallback={<Loader />}><WellnessHubPage /></Suspense> },
   ],

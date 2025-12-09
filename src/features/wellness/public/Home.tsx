@@ -1,346 +1,262 @@
-// src/pages/Home.tsx
-import { useEffect, useMemo, useState } from "react";
-import Hero from "./components/Hero";
-import Card from "./components/Card";
-import Modal from "./components/Modal";
-import QuickView from "./components/QuickView";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Star, User, Zap } from "lucide-react";
 
-import type { Item } from "../../../data";
-import { useProducts, type Product } from "../hooks/useProducts";
-import { getStorefrontConfig } from "../admin/api/storefront.api";
-import { StorefrontConfig, DEFAULT_STOREFRONT } from "../admin/types/storefront";
+/**
+ * NEW HOME DESIGN - LIGHTER & CLEANER
+ * Focus: Freelance Trainers (1st), Proteins (2nd), T-Shirts (3rd).
+ * Style: Premium, Attractive, "Walkthrough" feel.
+ * 
+ * Addressed User Feedback: "Need to change its feel, made it less dark and big"
+ */
 
-/* ---------- Tabs ---------- */
-type MainTab = "supplements" | "active" | "healthy";
-
-const TABS: { key: MainTab; label: string }[] = [
-  { key: "supplements", label: "Proteins & Supplements" },
-  { key: "active", label: "Active Wear" },
-  { key: "healthy", label: "Healthy Eats" },
-];
-
-type SortKey = "featured" | "newest" | "a-z" | "z-a";
-
-const CATEGORY_TO_TAB: Record<number, MainTab> = {
-  0: "supplements",
-  1: "healthy",
-  2: "active",
-  3: "supplements",
-};
-
-const CATEGORY_TO_TYPE: Record<number, Item["type"]> = {
-  0: "product",
-  1: "food",
-  2: "apparel",
-  3: "product",
-};
-
-const FALLBACK_IMG: Record<"product" | "apparel" | "food", string> = {
-  product:
-    "https://images.unsplash.com/photo-1579722821273-0f6c5f31b2a3?q=80&w=1200&auto=format&fit=crop",
-  apparel:
-    "https://images.unsplash.com/photo-1520975922321-16b5f2f65c7d?q=80&w=1200&auto=format&fit=crop",
-  food:
-    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1200&auto=format&fit=crop",
-};
-
-function withImage(arr: Item[]) {
-  return arr.map((i) => ({
-    ...i,
-    image:
-      i.image ||
-      FALLBACK_IMG[(i.type as "product" | "apparel" | "food") ?? "product"],
-  }));
-}
-
-function mapProductToItem(p: Product): Item & { category: number } {
-  const type = CATEGORY_TO_TYPE[p.category] ?? "product";
-
-  return {
-    id: p.id,
-    name: p.name,
-    type,
-    image: p.imageUrl,
-    isNew: p.isNew,
-    createdAt: p.createdAt ? Date.parse(p.createdAt) : undefined,
-    category: p.category,
-    rating: p.rating,
-    discountPct: p.discountPct,
-    tag: p.tag,
-  };
-}
-
-/* ---------- Page ---------- */
 export default function Home() {
-  const [config, setConfig] = useState<StorefrontConfig>(DEFAULT_STOREFRONT);
-  const [tab, setTab] = useState<MainTab>("supplements");
-  const [sortBy, setSortBy] = useState<SortKey>("featured");
-  const [onlyNew, setOnlyNew] = useState(false);
-  const [quickItem, setQuickItem] = useState<Item | null>(null);
-  const [visible, setVisible] = useState(9);
-
-  const { data: products, isLoading, isError } = useProducts();
-
-  // Fetch dynamic config
-  useEffect(() => {
-    getStorefrontConfig().then(setConfig);
-  }, []);
-
-  const allItems = useMemo(
-    () => (products || []).map(mapProductToItem),
-    [products]
-  );
-
-  const base = useMemo(() => {
-    const filtered = allItems.filter(
-      (i: any) => CATEGORY_TO_TAB[i.category] === tab
-    );
-    return withImage(filtered);
-  }, [allItems, tab]);
-
-  const items = useMemo(() => {
-    let list = [...base];
-    if (onlyNew) list = list.filter((x: any) => x?.isNew);
-
-    if (sortBy === "newest") {
-      list.sort(
-        (a: any, b: any) =>
-          (b.createdAt ?? (b.isNew ? 1 : 0)) -
-          (a.createdAt ?? (a.isNew ? 1 : 0))
-      );
-    } else if (sortBy === "a-z") {
-      list.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-    } else if (sortBy === "z-a") {
-      list.sort((a, b) => String(b.name).localeCompare(String(a.name)));
-    }
-    return list;
-  }, [base, sortBy, onlyNew]);
-
-  const shown = items.slice(0, visible);
-  const canShowMore = items.length > visible;
-
-  const featuredCombos = useMemo(
-    () => withImage(allItems.filter((i) => i.type === "product").slice(0, 3)),
-    [allItems]
-  );
-
-  function selectTab(next: MainTab) {
-    setTab(next);
-    setVisible(9);
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-12 pb-12">
-        <Hero config={config.hero} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-96 rounded-2xl bg-gray-100 animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="space-y-12 pb-12">
-        <Hero config={config.hero} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-12">
-          <p className="text-red-600">Failed to load products. Please try again later.</p>
-        </div>
-      </div>
-    );
-  }
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
-    <div className="space-y-16 pb-20">
-      {/* HERO */}
-      <Hero config={config.hero} />
+    <div className={`min-h-screen bg-white transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"}`}>
 
-      {/* FEATURES SECTION */}
-      {config.features.enabled && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {config.features.items.map((f, i) => (
-              <Feature key={i} icon={f.icon} title={f.title} text={f.description} />
-            ))}
+      {/* HERO / WELCOME SECTION - LIGHTER & CLEANER */}
+      <section className="relative min-h-[85vh] flex items-center bg-gradient-to-br from-slate-50 to-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+        <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="text-left animate-fade-in-up order-2 lg:order-1 pt-12 lg:pt-0">
+            <span className="inline-block py-1.5 px-4 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold tracking-wide mb-6">
+              WELLNESS CONNECT
+            </span>
+            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
+              Unlock Your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Full Potential</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
+              The premium ecosystem for freelance personal training, elite supplements, and gym-ready aesthetics.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/freelance-trainee" className="px-8 py-4 bg-gray-900 hover:bg-black text-white rounded-full font-bold text-lg transition transform hover:-translate-y-1 shadow-xl hover:shadow-2xl flex items-center justify-center gap-2">
+                Find a Trainer <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link to="/categories" className="px-8 py-4 bg-white text-gray-900 border border-gray-200 hover:border-gray-400 rounded-full font-bold text-lg transition shadow-sm hover:shadow-md flex items-center justify-center">
+                Shop Collection
+              </Link>
+            </div>
           </div>
-        </section>
-      )}
 
-      {/* DYNAMIC SECTIONS */}
-      {config.sections
-        .filter((s) => s.enabled)
-        .sort((a, b) => a.order - b.order)
-        .map((section) => {
-          if (section.type === "products") {
-            return (
-              <section key={section.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-                <div className="text-center space-y-2">
-                  <h2 className="text-3xl font-bold text-gray-900">{section.title}</h2>
-                  <p className="text-gray-500 max-w-2xl mx-auto">
-                    Handpicked items to support your journey to a healthier, happier you.
-                  </p>
+          <div className="relative order-1 lg:order-2 h-[400px] lg:h-auto flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-md lg:max-w-full aspect-[4/5] lg:aspect-auto lg:h-[600px] rounded-[2rem] overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition duration-700 group">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 z-10"></div>
+              <img
+                src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2069&auto=format&fit=crop"
+                className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
+                alt="Fitness Lifestyle"
+              />
+              <div className="absolute bottom-6 left-6 z-20 text-white">
+                <p className="font-bold text-xl">Train with the Best</p>
+                <p className="text-white/80 text-sm">Join the community today</p>
+              </div>
+            </div>
+
+            {/* Decorative floating elements */}
+            <div className="absolute top-10 -right-10 w-24 h-24 bg-yellow-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+            <div className="absolute bottom-10 -left-10 w-32 h-32 bg-indigo-600 rounded-full blur-3xl opacity-20"></div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* 1. FREELANCE TRAINEES SECTION */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2 relative z-10">
+              <span className="text-indigo-600 font-bold tracking-wider uppercase text-sm mb-2 block">Personalized Coaching</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                Expert Freelance <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">Personal Trainers</span>
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
+                Connect directly with elite freelance coaches who understand your goals.
+                No middleman, just you and personalized guidance to transform your physique.
+              </p>
+
+              <ul className="space-y-4 mb-10">
+                {[
+                  "Custom plans tailored to your lifestyle",
+                  "Direct communication & accountability",
+                  "More affordable than commercial gyms",
+                  "Train anywhere, anytime"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <div className="bg-indigo-50 p-1.5 rounded-full">
+                      <User className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <span className="text-gray-700 font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link to="/freelance-trainee" className="inline-flex items-center gap-2 text-indigo-600 font-bold border-b-2 border-indigo-200 hover:border-indigo-600 pb-1 transition-all text-lg group">
+                Meet Our Trainers <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition" />
+              </Link>
+            </div>
+
+            <div className="lg:w-1/2 relative">
+              <div className="grid grid-cols-2 gap-4">
+                <img
+                  src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop"
+                  alt="Trainer 1"
+                  className="rounded-2xl shadow-xl w-full h-64 object-cover transform translate-y-8 hover:translate-y-6 transition duration-500"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=1000&auto=format&fit=crop"
+                  alt="Trainer 2"
+                  className="rounded-2xl shadow-xl w-full h-64 object-cover hover:-translate-y-2 transition duration-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* 2. PREMIUM PROTEINS SECTION */}
+      <section className="py-24 bg-gray-50 relative">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col-reverse lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2 relative">
+              <div className="absolute -top-10 -left-10 w-full h-full bg-orange-100 rounded-full blur-3xl -z-10 opacity-60" />
+              <div className="relative group">
+                <img
+                  src="https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=2070&auto=format&fit=crop"
+                  alt="Protein Supplements"
+                  className="rounded-3xl shadow-xl w-full object-cover h-[500px]"
+                />
+                <div className="absolute inset-0 bg-black/20 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+              </div>
+              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100 max-w-xs animate-bounce-slow">
+                <div className="flex items-center gap-3 mb-2">
+                  <Star className="w-5 h-5 text-orange-500 fill-orange-500" />
+                  <span className="font-bold text-gray-900">Top Rated Purity</span>
                 </div>
+                <p className="text-sm text-gray-500">Lab-tested supplements for maximum absorption.</p>
+              </div>
+            </div>
 
-                {/* Tabs & Filters */}
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  <div className="bg-gray-100/50 p-1.5 rounded-xl inline-flex">
-                    {TABS.map((t) => (
-                      <button
-                        key={t.key}
-                        onClick={() => selectTab(t.key)}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                        ${tab === t.key
-                            ? "bg-white text-emerald-700 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                          }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
+            <div className="lg:w-1/2">
+              <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">Fuel Your Body</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                High-Performance <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Proteins & Supplements</span>
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                Don't let your hard work go to waste. Fuel your recovery with our premium selection of whey, plant-based proteins, and essential vitamins designed for peak performance.
+              </p>
 
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        className="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                        checked={onlyNew}
-                        onChange={(e) => setOnlyNew(e.target.checked)}
-                      />
-                      New Arrivals
-                    </label>
-
-                    <div className="relative">
-                      <select
-                        className="appearance-none bg-white border border-gray-200 text-gray-700 py-2 pl-4 pr-10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as SortKey)}
-                      >
-                        <option value="featured">Featured</option>
-                        <option value="newest">Newest</option>
-                        <option value="a-z">Name (A-Z)</option>
-                        <option value="z-a">Name (Z-A)</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                      </div>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="p-5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                  <h4 className="font-bold text-gray-900 mb-1 text-lg">Whey Isolate</h4>
+                  <p className="text-sm text-gray-500">Fast absorption for post-workout recovery.</p>
                 </div>
-
-                {/* Product Grid */}
-                {shown.length ? (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {shown.map((i) => (
-                        <Card
-                          key={i.id}
-                          item={i}
-                          onQuickView={(it) => setQuickItem(it)}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="pt-8 flex justify-center">
-                      {canShowMore ? (
-                        <button
-                          onClick={() => setVisible((v) => v + 9)}
-                          className="px-8 py-3 rounded-full bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
-                        >
-                          Load More Products
-                        </button>
-                      ) : items.length > 9 ? (
-                        <button
-                          onClick={() => setVisible(9)}
-                          className="px-8 py-3 rounded-full bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
-                        >
-                          Show Less
-                        </button>
-                      ) : null}
-                    </div>
-                  </>
-                ) : (
-                  <div className="py-20 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                      <span className="text-2xl">🔍</span>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900">No products found</h3>
-                    <p className="text-gray-500 mt-1">Try adjusting your filters or category.</p>
-                  </div>
-                )}
-              </section>
-            );
-          }
-
-          if (section.type === "combos") {
-            return (
-              <section key={section.id} className="bg-emerald-900 py-16 text-white rounded-3xl mx-4 sm:mx-6 lg:mx-8 overflow-hidden relative">
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-emerald-800 rounded-full blur-3xl opacity-50" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-teal-800 rounded-full blur-3xl opacity-50" />
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="flex flex-col md:flex-row items-end justify-between gap-4 mb-10">
-                    <div>
-                      <span className="text-emerald-300 font-semibold tracking-wider uppercase text-sm">Limited Time Offers</span>
-                      <h2 className="text-3xl md:text-4xl font-bold mt-2">{section.title}</h2>
-                    </div>
-                    <button className="text-white border-b border-emerald-400 pb-0.5 hover:text-emerald-300 hover:border-emerald-300 transition-colors">
-                      View All Bundles &rarr;
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {featuredCombos.map((i) => (
-                      <div key={`combo-${i.id}`} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors">
-                        <Card
-                          item={i}
-                          onQuickView={(it) => setQuickItem(it)}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                <div className="p-5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                  <h4 className="font-bold text-gray-900 mb-1 text-lg">Mass Gainers</h4>
+                  <p className="text-sm text-gray-500">Calorie-dense formulas for size and strength.</p>
                 </div>
-              </section>
-            );
-          }
+              </div>
 
-          if (section.type === "brands") {
-            return (
-              <section key={section.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-100">
-                <p className="text-center text-sm text-gray-400 font-medium mb-6 uppercase tracking-widest">{section.title}</p>
-                <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                  {["ON", "MyProtein", "MuscleTech", "Dymatize", "GNC", "Bulk"].map((b) => (
-                    <span key={b} className="text-xl font-bold text-gray-800">{b}</span>
-                  ))}
+              <Link to="/categories?tab=supplements" className="px-8 py-3 bg-gray-900 text-white rounded-full font-bold hover:bg-black transition shadow-lg inline-flex items-center gap-2">
+                Shop Supplements <Zap className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* 3. ACTIVEWEAR & T-SHIRTS SECTION */}
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 text-center max-w-4xl">
+          <span className="text-rose-600 font-bold tracking-wider uppercase text-sm mb-4 block">Look Good, Feel Good</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Elite <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600">Activewear</span> Collection
+          </h2>
+          <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
+            Designed for movement and engineered for style. Check out our latest drops of oversized tees, compression gear, and gym essentials.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Item 1 */}
+            <Link to="/categories?tab=active" className="group block">
+              <div className="relative overflow-hidden rounded-2xl aspect-[4/5] mb-4 bg-gray-100">
+                <img
+                  src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=987&auto=format&fit=crop"
+                  alt="Black T-Shirt"
+                  className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg transform scale-90 group-hover:scale-100 transition">View Details</span>
                 </div>
-              </section>
-            );
-          }
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 group-hover:text-rose-600 transition">Oversized Pump Tee</h3>
+              <p className="text-gray-500 font-medium">$35.00</p>
+            </Link>
 
-          return null;
-        })}
+            {/* Item 2 */}
+            <Link to="/categories?tab=active" className="group block mt-8 md:mt-0">
+              <div className="relative overflow-hidden rounded-2xl aspect-[4/5] mb-4 bg-gray-100">
+                <img
+                  src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1760&auto=format&fit=crop"
+                  alt="White T-Shirt"
+                  className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg transform scale-90 group-hover:scale-100 transition">View Details</span>
+                </div>
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 group-hover:text-rose-600 transition">Performance Tank</h3>
+              <p className="text-gray-500 font-medium">$28.00</p>
+            </Link>
 
-      {/* Quick View modal */}
-      <Modal
-        open={!!quickItem}
-        onClose={() => setQuickItem(null)}
-        title="Product details"
-      >
-        {quickItem && <QuickView item={quickItem} />}
-      </Modal>
-    </div>
-  );
-}
+            {/* Item 3 */}
+            <Link to="/categories?tab=active" className="group block">
+              <div className="relative overflow-hidden rounded-2xl aspect-[4/5] mb-4 bg-gray-100">
+                <img
+                  src="https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=927&auto=format&fit=crop"
+                  alt="Grey Hoodie"
+                  className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg transform scale-90 group-hover:scale-100 transition">View Details</span>
+                </div>
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 group-hover:text-rose-600 transition">Essential Hoodie</h3>
+              <p className="text-gray-500 font-medium">$55.00</p>
+            </Link>
+          </div>
 
-function Feature({ icon, title, text }: { icon: string; title: string; text: string }) {
-  return (
-    <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-emerald-50/50 border border-emerald-100 hover:shadow-md hover:bg-emerald-50 transition-all duration-300">
-      <div className="w-14 h-14 flex items-center justify-center rounded-full bg-emerald-100 text-2xl mb-4">
-        {icon}
-      </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600 leading-relaxed">{text}</p>
+          <div className="mt-12">
+            <Link to="/categories?tab=active" className="text-rose-600 font-bold border-b-2 border-rose-100 hover:border-rose-600 pb-1 hover:text-rose-700 transition text-lg">
+              View Full Collection
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FOOTER SLIVER */}
+      <section className="py-20 bg-gray-900 text-white text-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-900/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-900/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Transform?</h2>
+          <p className="text-gray-300 mb-8 max-w-xl mx-auto text-lg">Join the Wellness Connect community and start your journey today.</p>
+          <Link to="/freelance-trainee" className="px-10 py-4 bg-white text-gray-900 rounded-full font-bold hover:bg-gray-100 transition shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-block">
+            Find Your Trainer Now
+          </Link>
+        </div>
+      </section>
+
     </div>
   );
 }

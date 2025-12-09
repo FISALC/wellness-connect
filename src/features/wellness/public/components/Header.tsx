@@ -28,6 +28,7 @@ export default function Header({ onOpenFilters }: Props) {
               <NavLink to="/" end className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "hover:text-emerald-700"}>HOME</NavLink>
               <NavLink to="/categories" className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "hover:text-emerald-700"}>CATEGORIES</NavLink>
               <NavLink to="/wellness-hub" className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "hover:text-emerald-700"}>WELLNESS HUB</NavLink>
+              <NavLink to="/freelance-trainee" className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "hover:text-emerald-700"}>FREELANCE TRAINEE</NavLink>
               <NavLink to="/contact" className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "hover:text-emerald-700"}>CONTACT</NavLink>
             </nav>
 
@@ -87,6 +88,13 @@ export default function Header({ onOpenFilters }: Props) {
               className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "text-gray-600"}
             >
               Wellness Hub
+            </NavLink>
+            <NavLink
+              to="/freelance-trainee"
+              onClick={() => setIsMenuOpen(false)}
+              className={({ isActive }) => isActive ? "font-semibold text-emerald-700" : "text-gray-600"}
+            >
+              Freelance Trainee
             </NavLink>
             <NavLink
               to="/contact"

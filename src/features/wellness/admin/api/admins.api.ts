@@ -16,6 +16,7 @@ export type CreateAdminDto = {
 };
 
 export type UpdateAdminDto = {
+    username: string;
     email: string;
     role: string;
     password?: string; // Optional: Send empty string if not changing
